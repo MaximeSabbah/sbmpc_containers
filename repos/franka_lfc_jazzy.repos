@@ -1,0 +1,13 @@
+repositories:
+  linear_feedback_controller:
+    type: git
+    url: https://github.com/loco-3d/linear-feedback-controller.git
+    version: v3.2.0
+  linear_feedback_controller_msgs:
+    type: git
+    url: https://github.com/loco-3d/linear-feedback-controller-msgs.git
+    version: v1.2.2
+  franka_ros2:
+    type: git
+    url: https://github.com/frankarobotics/franka_ros2.git
+    version: jazzy

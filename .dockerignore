@@ -1,0 +1,10 @@
+.git
+.gitignore
+.env
+.env.local
+README.md
+build/
+install/
+log/
+__pycache__/
+*.pyc

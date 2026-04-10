@@ -1,0 +1,29 @@
+name: sbmpc_containers
+
+services:
+  sbmpc-dev:
+    image: ${IMAGE_NAME:-sbmpc/unified-jazzy-cuda:latest}
+    container_name: ${CONTAINER_NAME:-sbmpc-dev}
+    network_mode: host
+    ipc: host
+    privileged: true
+    gpus: all
+    environment:
+      DISPLAY: ${DISPLAY:-}
+      QT_X11_NO_MITSHM: "1"
+      NVIDIA_VISIBLE_DEVICES: ${NVIDIA_VISIBLE_DEVICES:-all}
+      NVIDIA_DRIVER_CAPABILITIES: ${NVIDIA_DRIVER_CAPABILITIES:-all}
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
+      RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}
+    volumes:
+      - ${SBMPC_PANDA_DIR:-../../sbmpc-panda}:/workspace/sbmpc-panda:rw
+      - ${SBMPC_ROS_DIR:-../../sbmpc_ros}:/workspace/sbmpc_ros:rw
+      - ..:/workspace/sbmpc_containers:rw
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev/dri:/dev/dri:rw
+      - ccache:/ccache
+    working_dir: /workspace
+    command: sleep infinity
+
+volumes:
+  ccache:
