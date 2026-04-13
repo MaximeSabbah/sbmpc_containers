@@ -14,6 +14,7 @@ The unified image is intended to be the base for simulation and later robot-side
 - `linear-feedback-controller` built from source.
 - `linear-feedback-controller-msgs` built from source.
 - `franka_ros2` built from source from its Jazzy branch, plus its upstream dependencies imported from `dependency.repos`.
+- `franka_description` intentionally replaced with the Agimus fork from `agimus-project/agimus-franka-description`, while preserving the ROS package name `franka_description`.
 - Pixi installed globally, so `sbmpc` can keep using its own Pixi environment.
 - NVIDIA container runtime support through Docker `--gpus all` / Compose `gpus: all`.
 
@@ -37,6 +38,7 @@ as the `sbmpc_ros` source path. The older compatibility mount at
 
 - `docker/unified-jazzy-cuda.Dockerfile`: the main image definition.
 - `repos/franka_lfc_jazzy.repos`: source repositories imported into the ROS workspace.
+- `repos/agimus_franka_description.repos`: override manifest used to replace upstream `franka_description` with the Agimus fork.
 - `compose/dev.yaml`: development container with host networking, GPU access, X11, local source mounts, and a dedicated `/workspace/ros2_ws` colcon workspace.
 - `scripts/build_unified.sh`: builds the image.
 - `scripts/setup_ros2_ws.sh`: creates the host-side `ros2_ws` directory used for colcon artifacts.
@@ -67,7 +69,7 @@ From this repository:
 ./scripts/build_unified.sh
 ```
 
-This builds `sbmpc/unified-jazzy-cuda:latest` by default. The build imports and compiles Franka ROS 2 and LFC sources in `/opt/sbmpc_deps_ws`.
+This builds `sbmpc/unified-jazzy-cuda:latest` by default. The build imports and compiles Franka ROS 2 and LFC sources in `/opt/sbmpc_deps_ws`, then replaces the upstream `franka_description` dependency with the Agimus fork before building.
 
 You can override the base image if needed:
 
@@ -115,6 +117,7 @@ Inside the container, validate the full environment:
 ```
 
 The check script verifies that ROS 2, LFC packages, and `sbmpc` Pixi/JAX CUDA setup can coexist in the same container.
+It also prints the `franka_description` package path and source remote so you can confirm the Agimus replacement is active.
 
 ## Expected `sbmpc_ros` Workflow
 
@@ -150,6 +153,32 @@ When ROS is sourced and you need to run `sbmpc` from Pixi, prefer the wrapper so
 
 For GUI simulation, make sure host X11 access is enabled. `scripts/run_dev.sh` calls `xhost +local:docker` when `DISPLAY` is set.
 
+For an SSH-forwarded session from your laptop to a lab machine:
+
+```bash
+ssh -Y your_user@hako
+cd /path/to/sbmpc_containers
+./scripts/run_dev.sh
+```
+
+`run_dev.sh` now forwards your Xauthority cookie into the container as well as
+`DISPLAY`, which is required for GUI apps launched from inside Docker to use the
+SSH-forwarded X server on your laptop.
+
+Practical advice:
+
+- `rviz2` over SSH X11 is usually workable for short checks.
+- full Gazebo / `gz sim` over SSH X11 can be very slow or unstable, especially with 3D rendering.
+- the more robust option for “seeing the robot” from home is a remote desktop path on `hako` such as TurboVNC, NoMachine, Xpra, or an existing lab desktop session, then running the Docker container from inside that desktop session.
+- for quick non-visual validation from SSH only, prefer the headless launch:
+
+```bash
+cd /workspace/ros2_ws
+source install/setup.bash
+ros2 launch sbmpc_bringup sbmpc_franka_lfc_sim.launch.py \
+  gz_args:='empty.sdf -r -s' use_rviz:=false
+```
+
 ## Design Decision: One Unified Container
 
 This repo intentionally avoids a two-container split. The future `sbmpc_ros` process needs to publish feedforward torques and Riccati gains to LFC message types while running the same controller code used in simulation. Keeping ROS 2 Jazzy, LFC, Franka ROS 2, and `sbmpc` in one image removes Python-version and IPC boundary problems.
@@ -159,5 +188,5 @@ If the image grows too heavy, the next optimization should be multi-stage Docker
 ## Known Build Risks
 
 - Franka ROS 2 and LFC are source dependencies; upstream Jazzy changes can break builds. The LFC repositories are pinned to released tags, while `franka_ros2` follows its `jazzy` branch.
-- Some Gazebo/Franka packages require graphics or `/dev/dri` access for interactive simulation. The compose file mounts X11 and `/dev/dri` for this reason.
+- Some Gazebo/Franka packages require graphics or `/dev/dri` access for interactive simulation. The compose file mounts X11, forwards Xauthority, and exposes `/dev/dri` for this reason.
 - JAX CUDA support is provided by the `sbmpc` Pixi environment plus the NVIDIA container runtime. If JAX does not see the GPU, first verify `nvidia-smi` inside the container, then rerun the Pixi CUDA environment checks.

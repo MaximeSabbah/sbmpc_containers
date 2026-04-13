@@ -10,6 +10,7 @@ services:
     gpus: all
     environment:
       DISPLAY: ${DISPLAY:-}
+      XAUTHORITY: ${XAUTHORITY_IN_CONTAINER:-/tmp/.docker.xauth}
       QT_X11_NO_MITSHM: "1"
       NVIDIA_VISIBLE_DEVICES: ${NVIDIA_VISIBLE_DEVICES:-all}
       NVIDIA_DRIVER_CAPABILITIES: ${NVIDIA_DRIVER_CAPABILITIES:-all}
@@ -22,6 +23,7 @@ services:
       - ${SBMPC_ROS_DIR:-../../sbmpc_ros}:/workspace/ros2_ws/src/sbmpc_ros:rw
       - ..:/workspace/sbmpc_containers:rw
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${XAUTHORITY_HOST:-/dev/null}:${XAUTHORITY_IN_CONTAINER:-/tmp/.docker.xauth}:ro
       - /dev/dri:/dev/dri:rw
       - ccache:/ccache
     working_dir: /workspace/ros2_ws

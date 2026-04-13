@@ -79,12 +79,15 @@ RUN if ! getent group ${USER_GID} >/dev/null; then groupadd --gid ${USER_GID} ${
 
 WORKDIR /opt/sbmpc_deps_ws
 COPY repos/franka_lfc_jazzy.repos /tmp/franka_lfc_jazzy.repos
+COPY repos/agimus_franka_description.repos /tmp/agimus_franka_description.repos
 
 RUN mkdir -p src \
     && vcs import --shallow --recursive src < /tmp/franka_lfc_jazzy.repos \
     && if [ -f src/franka_ros2/dependency.repos ]; then \
          vcs import --shallow --recursive src < src/franka_ros2/dependency.repos; \
-       fi
+       fi \
+    && rm -rf src/franka_description \
+    && vcs import --shallow --recursive src < /tmp/agimus_franka_description.repos
 
 RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
     && apt-get update \
