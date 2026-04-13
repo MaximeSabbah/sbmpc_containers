@@ -5,6 +5,9 @@ source /opt/ros/${ROS_DISTRO:-jazzy}/setup.bash
 if [ -f /opt/sbmpc_deps_ws/install/setup.bash ]; then
   source /opt/sbmpc_deps_ws/install/setup.bash
 fi
+if [ -f /workspace/ros2_ws/install/setup.bash ]; then
+  source /workspace/ros2_ws/install/setup.bash
+fi
 set -u
 
 PIXI_ENV=${PIXI_ENV:-cuda}
