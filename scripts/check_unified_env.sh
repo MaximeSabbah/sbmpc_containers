@@ -7,6 +7,8 @@ if [ -f /opt/sbmpc_deps_ws/install/setup.bash ]; then
 fi
 set -u
 
+ROS2_WS=${ROS2_WS:-/workspace/ros2_ws}
+
 echo "== ROS =="
 echo "ROS_DISTRO=${ROS_DISTRO:-unset}"
 ros2 pkg prefix rclpy >/dev/null
@@ -19,6 +21,16 @@ PY
 echo "== LFC packages =="
 ros2 pkg prefix linear_feedback_controller
 ros2 pkg prefix linear_feedback_controller_msgs
+
+echo "== ROS workspace =="
+echo "ROS2_WS=${ROS2_WS}"
+mkdir -p "${ROS2_WS}/src"
+if [ -d "${ROS2_WS}/src/sbmpc_ros" ]; then
+  cd "${ROS2_WS}"
+  colcon list --base-paths src
+else
+  echo "Skipping sbmpc_ros workspace listing: ${ROS2_WS}/src/sbmpc_ros is not mounted."
+fi
 
 if command -v nvidia-smi >/dev/null 2>&1; then
   echo "== NVIDIA =="

@@ -19,12 +19,18 @@ The unified image is intended to be the base for simulation and later robot-side
 
 The image does not copy `sbmpc` into the build by default. It mounts your local checkout into `/workspace/sbmpc`, which keeps iteration fast and avoids rebuilding the ROS image every time controller code changes.
 
+The canonical ROS workspace inside the dev container is `/workspace/ros2_ws`. The
+`sbmpc_ros` checkout is mounted into `/workspace/ros2_ws/src/sbmpc_ros`, so
+`build/`, `install/`, and `log/` live under the workspace root instead of inside
+the Git repository.
+
 ## Repository Layout
 
 - `docker/unified-jazzy-cuda.Dockerfile`: the main image definition.
 - `repos/franka_lfc_jazzy.repos`: source repositories imported into the ROS workspace.
-- `compose/dev.yaml`: development container with host networking, GPU access, X11, and local source mounts.
+- `compose/dev.yaml`: development container with host networking, GPU access, X11, local source mounts, and a dedicated `/workspace/ros2_ws` colcon workspace.
 - `scripts/build_unified.sh`: builds the image.
+- `scripts/setup_ros2_ws.sh`: creates the host-side `ros2_ws` directory used for colcon artifacts.
 - `scripts/run_dev.sh`: starts and enters the development container.
 - `scripts/enter.sh`: enters an already running development container.
 - `scripts/check_unified_env.sh`: verifies ROS, LFC, GPU/JAX, and `sbmpc` integration from inside the container.
@@ -68,8 +74,12 @@ The default compose file expects this directory structure:
 /home/msabbah/Desktop/
   sbmpc_containers/
   sbmpc/
-  sbmpc_ros/        # optional, future bridge repo
+  sbmpc_ros/
+  ros2_ws/
 ```
+
+`scripts/run_dev.sh` creates `ros2_ws/src` automatically if it does not already
+exist.
 
 Start and enter the container:
 
@@ -83,6 +93,12 @@ If your `sbmpc` checkout is elsewhere, pass an absolute path:
 SBMPC_DIR=/path/to/sbmpc ./scripts/run_dev.sh
 ```
 
+You can also override the ROS workspace artifact directory:
+
+```bash
+ROS2_WS_DIR=/path/to/ros2_ws ./scripts/run_dev.sh
+```
+
 Inside the container, validate the full environment:
 
 ```bash
@@ -91,7 +107,23 @@ Inside the container, validate the full environment:
 
 The check script verifies that ROS 2, LFC packages, and `sbmpc` Pixi/JAX CUDA setup can coexist in the same container.
 
-## Expected sbmpc Workflow
+## Expected `sbmpc_ros` Workflow
+
+Inside the container:
+
+```bash
+cd /workspace/ros2_ws
+colcon build --symlink-install --packages-select sbmpc_ros_bridge
+colcon test --packages-select sbmpc_ros_bridge --event-handlers console_direct+
+colcon test-result --verbose
+```
+
+The `sbmpc_ros` source repository is available at both:
+
+- `/workspace/ros2_ws/src/sbmpc_ros` as the canonical colcon source path
+- `/workspace/sbmpc_ros` as a convenience compatibility path
+
+## Expected `sbmpc` Workflow
 
 Inside the container:
 

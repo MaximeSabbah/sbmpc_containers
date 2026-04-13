@@ -15,14 +15,17 @@ services:
       NVIDIA_DRIVER_CAPABILITIES: ${NVIDIA_DRIVER_CAPABILITIES:-all}
       ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
       RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}
+      ROS2_WS: /workspace/ros2_ws
     volumes:
+      - ${ROS2_WS_DIR:-../../ros2_ws}:/workspace/ros2_ws:rw
       - ${SBMPC_DIR:-../../sbmpc}:/workspace/sbmpc:rw
+      - ${SBMPC_ROS_DIR:-../../sbmpc_ros}:/workspace/ros2_ws/src/sbmpc_ros:rw
       - ${SBMPC_ROS_DIR:-../../sbmpc_ros}:/workspace/sbmpc_ros:rw
       - ..:/workspace/sbmpc_containers:rw
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /dev/dri:/dev/dri:rw
       - ccache:/ccache
-    working_dir: /workspace
+    working_dir: /workspace/ros2_ws
     command: sleep infinity
 
 volumes:

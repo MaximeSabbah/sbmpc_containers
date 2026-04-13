@@ -11,6 +11,7 @@ fi
 
 export SBMPC_DIR=${SBMPC_DIR:-${REPO_ROOT}/../sbmpc}
 export SBMPC_ROS_DIR=${SBMPC_ROS_DIR:-${REPO_ROOT}/../sbmpc_ros}
+export ROS2_WS_DIR=${ROS2_WS_DIR:-${REPO_ROOT}/../ros2_ws}
 
 if [ ! -d "${SBMPC_DIR}" ]; then
   echo "Missing sbmpc checkout: ${SBMPC_DIR}" >&2
@@ -22,5 +23,7 @@ if [ ! -d "${SBMPC_ROS_DIR}" ]; then
   mkdir -p "${SBMPC_ROS_DIR}"
 fi
 
+"${REPO_ROOT}/scripts/setup_ros2_ws.sh"
+
 docker compose -f "${COMPOSE_FILE}" up -d
-exec docker compose -f "${COMPOSE_FILE}" exec sbmpc-dev bash
+exec docker compose -f "${COMPOSE_FILE}" exec -w /workspace/ros2_ws sbmpc-dev bash

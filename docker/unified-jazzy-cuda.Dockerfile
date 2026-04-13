@@ -20,6 +20,7 @@ ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics
 ENV PIXI_HOME=/opt/pixi
 ENV PATH=/opt/pixi/bin:${PATH}
 ENV CCACHE_DIR=/ccache
+ENV ROS2_WS=/workspace/ros2_ws
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash-completion \
@@ -94,7 +95,7 @@ RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
     && colcon build --symlink-install \
        --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DBUILD_TESTS=OFF
 
-RUN mkdir -p /workspace /ccache \
+RUN mkdir -p /workspace /workspace/ros2_ws/src /ccache \
     && chown -R ${USERNAME}:${USERNAME} /workspace /ccache /opt/sbmpc_deps_ws
 
 RUN cat >/ros_entrypoint_sbmpc.sh <<'EOF'
@@ -105,15 +106,19 @@ source /opt/ros/${ROS_DISTRO}/setup.bash
 if [ -f /opt/sbmpc_deps_ws/install/setup.bash ]; then
   source /opt/sbmpc_deps_ws/install/setup.bash
 fi
+mkdir -p "${ROS2_WS}/src"
+if [ -f "${ROS2_WS}/install/setup.bash" ]; then
+  source "${ROS2_WS}/install/setup.bash"
+fi
 
 exec "$@"
 EOF
 RUN chmod +x /ros_entrypoint_sbmpc.sh
 
 USER ${USERNAME}
-WORKDIR /workspace
+WORKDIR /workspace/ros2_ws
 
-RUN printf '\nsource /opt/ros/${ROS_DISTRO}/setup.bash\nif [ -f /opt/sbmpc_deps_ws/install/setup.bash ]; then source /opt/sbmpc_deps_ws/install/setup.bash; fi\n' >> /home/${USERNAME}/.bashrc
+RUN printf '\nexport ROS2_WS=/workspace/ros2_ws\nsource /opt/ros/${ROS_DISTRO}/setup.bash\nif [ -f /opt/sbmpc_deps_ws/install/setup.bash ]; then source /opt/sbmpc_deps_ws/install/setup.bash; fi\nif [ -f ${ROS2_WS}/install/setup.bash ]; then source ${ROS2_WS}/install/setup.bash; fi\n' >> /home/${USERNAME}/.bashrc
 
 ENTRYPOINT ["/ros_entrypoint_sbmpc.sh"]
 CMD ["bash"]
