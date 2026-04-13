@@ -12,9 +12,13 @@ fi
 export SBMPC_PANDA_DIR=${SBMPC_PANDA_DIR:-${REPO_ROOT}/../sbmpc-panda}
 export SBMPC_ROS_DIR=${SBMPC_ROS_DIR:-${REPO_ROOT}/../sbmpc_ros}
 
+if [ ! -d "${SBMPC_PANDA_DIR}" ] && [ -d "${REPO_ROOT}/../sbmpc" ]; then
+  export SBMPC_PANDA_DIR="${REPO_ROOT}/../sbmpc"
+fi
+
 if [ ! -d "${SBMPC_PANDA_DIR}" ]; then
   echo "Missing sbmpc-panda checkout: ${SBMPC_PANDA_DIR}" >&2
-  echo "Set SBMPC_PANDA_DIR=/absolute/path/to/sbmpc-panda and retry." >&2
+  echo "Set SBMPC_PANDA_DIR=/absolute/path/to/sbmpc and retry." >&2
   exit 1
 fi
 

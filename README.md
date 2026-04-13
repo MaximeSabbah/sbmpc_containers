@@ -67,7 +67,7 @@ The default compose file expects this directory structure:
 ```text
 /home/msabbah/Desktop/
   sbmpc_containers/
-  sbmpc-panda/
+  sbmpc/
   sbmpc_ros/        # optional, future bridge repo
 ```
 
@@ -77,10 +77,10 @@ Start and enter the container:
 ./scripts/run_dev.sh
 ```
 
-If your `sbmpc-panda` checkout is elsewhere, pass an absolute path:
+The container still mounts the algorithm repo at `/workspace/sbmpc-panda` internally. If your `sbmpc` checkout is elsewhere, pass an absolute path:
 
 ```bash
-SBMPC_PANDA_DIR=/path/to/sbmpc-panda ./scripts/run_dev.sh
+SBMPC_PANDA_DIR=/path/to/sbmpc ./scripts/run_dev.sh
 ```
 
 Inside the container, validate the full environment:
