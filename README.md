@@ -24,6 +24,15 @@ The canonical ROS workspace inside the dev container is `/workspace/ros2_ws`. Th
 `build/`, `install/`, and `log/` live under the workspace root instead of inside
 the Git repository.
 
+Inside the container, use only:
+
+```bash
+/workspace/ros2_ws/src/sbmpc_ros
+```
+
+as the `sbmpc_ros` source path. The older compatibility mount at
+`/workspace/sbmpc_ros` has been removed to avoid ambiguity.
+
 ## Repository Layout
 
 - `docker/unified-jazzy-cuda.Dockerfile`: the main image definition.
@@ -79,7 +88,7 @@ The default compose file expects this directory structure:
 ```
 
 `scripts/run_dev.sh` creates `ros2_ws/src` automatically if it does not already
-exist.
+exist and wires `ros2_ws/src/sbmpc_ros` to your host checkout.
 
 Start and enter the container:
 
@@ -118,10 +127,9 @@ colcon test --packages-select sbmpc_ros_bridge --event-handlers console_direct+
 colcon test-result --verbose
 ```
 
-The `sbmpc_ros` source repository is available at both:
+The canonical `sbmpc_ros` source path inside the container is:
 
-- `/workspace/ros2_ws/src/sbmpc_ros` as the canonical colcon source path
-- `/workspace/sbmpc_ros` as a convenience compatibility path
+- `/workspace/ros2_ws/src/sbmpc_ros`
 
 ## Expected `sbmpc` Workflow
 

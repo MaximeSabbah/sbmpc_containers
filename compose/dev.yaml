@@ -20,7 +20,6 @@ services:
       - ${ROS2_WS_DIR:-../../ros2_ws}:/workspace/ros2_ws:rw
       - ${SBMPC_DIR:-../../sbmpc}:/workspace/sbmpc:rw
       - ${SBMPC_ROS_DIR:-../../sbmpc_ros}:/workspace/ros2_ws/src/sbmpc_ros:rw
-      - ${SBMPC_ROS_DIR:-../../sbmpc_ros}:/workspace/sbmpc_ros:rw
       - ..:/workspace/sbmpc_containers:rw
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /dev/dri:/dev/dri:rw
