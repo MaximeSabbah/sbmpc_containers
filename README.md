@@ -32,7 +32,14 @@ Inside the container, use only:
 ```
 
 as the `sbmpc_ros` source path. The older compatibility mount at
-`/workspace/sbmpc_ros` has been removed to avoid ambiguity.
+`/workspace/sbmpc_ros` is also restored as a legacy compatibility path for tools
+that still expect it, but `/workspace/ros2_ws/src/sbmpc_ros` remains the
+canonical source path for development and colcon builds.
+
+If you started your current dev container before this compatibility mount was
+added, restart it once so `/workspace/sbmpc_ros` becomes a real bind mount
+instead of an older symlink chain that may resolve outside `/workspace` and
+confuse VSCode.
 
 ## Repository Layout
 
@@ -134,6 +141,10 @@ The canonical `sbmpc_ros` source path inside the container is:
 
 - `/workspace/ros2_ws/src/sbmpc_ros`
 
+The legacy compatibility mount is also available when older scripts expect it:
+
+- `/workspace/sbmpc_ros`
+
 ## Expected `sbmpc` Workflow
 
 Inside the container:
@@ -164,6 +175,12 @@ cd /path/to/sbmpc_containers
 `run_dev.sh` now forwards your Xauthority cookie into the container as well as
 `DISPLAY`, which is required for GUI apps launched from inside Docker to use the
 SSH-forwarded X server on your laptop.
+
+The `sbmpc_franka_lfc_sim.launch.py` and `sbmpc_franka_lfc_real.launch.py`
+bridge actions launch the planner node through `scripts/pixi_ros_run.sh`
+automatically. You can still override the runtime with launch arguments such as
+`sbmpc_dir:=...`, `pixi_env:=...`, and
+`bridge_runtime_script:=/workspace/sbmpc_containers/scripts/pixi_ros_run.sh`.
 
 Practical advice:
 

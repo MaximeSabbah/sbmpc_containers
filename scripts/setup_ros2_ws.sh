@@ -34,6 +34,9 @@ The workspace keeps a symlink at:
 Inside the dev container, the repo is mounted directly at
   /workspace/ros2_ws/src/sbmpc_ros
 
+The legacy compatibility mount is also restored at
+  /workspace/sbmpc_ros
+
 while build/, install/, and log/ stay under
   /workspace/ros2_ws
 EOF
