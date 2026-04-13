@@ -9,16 +9,12 @@ if [ -n "${DISPLAY:-}" ] && command -v xhost >/dev/null 2>&1; then
   xhost +local:docker >/dev/null
 fi
 
-export SBMPC_PANDA_DIR=${SBMPC_PANDA_DIR:-${REPO_ROOT}/../sbmpc-panda}
+export SBMPC_DIR=${SBMPC_DIR:-${REPO_ROOT}/../sbmpc}
 export SBMPC_ROS_DIR=${SBMPC_ROS_DIR:-${REPO_ROOT}/../sbmpc_ros}
 
-if [ ! -d "${SBMPC_PANDA_DIR}" ] && [ -d "${REPO_ROOT}/../sbmpc" ]; then
-  export SBMPC_PANDA_DIR="${REPO_ROOT}/../sbmpc"
-fi
-
-if [ ! -d "${SBMPC_PANDA_DIR}" ]; then
-  echo "Missing sbmpc-panda checkout: ${SBMPC_PANDA_DIR}" >&2
-  echo "Set SBMPC_PANDA_DIR=/absolute/path/to/sbmpc and retry." >&2
+if [ ! -d "${SBMPC_DIR}" ]; then
+  echo "Missing sbmpc checkout: ${SBMPC_DIR}" >&2
+  echo "Set SBMPC_DIR=/absolute/path/to/sbmpc and retry." >&2
   exit 1
 fi
 

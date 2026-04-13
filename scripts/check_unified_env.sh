@@ -27,9 +27,9 @@ else
   echo "nvidia-smi not found in PATH; JAX GPU validation may still work through CUDA wheels."
 fi
 
-if [ -d /workspace/sbmpc-panda ]; then
-  echo "== sbmpc-panda Pixi environment =="
-  cd /workspace/sbmpc-panda
+if [ -d /workspace/sbmpc ]; then
+  echo "== sbmpc Pixi environment =="
+  cd /workspace/sbmpc
   pixi install -e cuda
   PIXI_PYTHONPATH=$(pixi run -e cuda python -c 'import sysconfig; paths=sysconfig.get_paths(); print(":".join(dict.fromkeys([paths["purelib"], paths["platlib"]])))')
   export PYTHONPATH="${PIXI_PYTHONPATH}:${PYTHONPATH:-}:/usr/lib/python3/dist-packages:/usr/local/lib/python3.12/dist-packages"
@@ -56,5 +56,5 @@ print('pixi LFC Control msg import: ok')
 PY
   pixi run -e cuda python -m pytest tests/test_mppi_gains.py tests/test_panda_pregrasp.py -q
 else
-  echo "Skipping sbmpc-panda checks: /workspace/sbmpc-panda is not mounted."
+  echo "Skipping sbmpc checks: /workspace/sbmpc is not mounted."
 fi

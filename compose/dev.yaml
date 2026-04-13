@@ -16,7 +16,7 @@ services:
       ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
       RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}
     volumes:
-      - ${SBMPC_PANDA_DIR:-../../sbmpc}:/workspace/sbmpc-panda:rw
+      - ${SBMPC_DIR:-../../sbmpc}:/workspace/sbmpc:rw
       - ${SBMPC_ROS_DIR:-../../sbmpc_ros}:/workspace/sbmpc_ros:rw
       - ..:/workspace/sbmpc_containers:rw
       - /tmp/.X11-unix:/tmp/.X11-unix:rw

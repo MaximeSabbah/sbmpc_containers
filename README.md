@@ -1,8 +1,8 @@
 # sbmpc_containers
 
-Container definitions for deploying the `sbmpc-panda` controller with ROS 2, Gazebo, Franka ROS 2, and `linear-feedback-controller` in one environment.
+Container definitions for deploying the `sbmpc` controller with ROS 2, Gazebo, Franka ROS 2, and `linear-feedback-controller` in one environment.
 
-The important constraint is Python compatibility. `sbmpc-panda` currently requires Python 3.12 and JAX >= 0.8, so this repo targets ROS 2 Jazzy on Ubuntu 24.04. ROS 2 Humble uses Python 3.10 and is not a good single-process target for the future `sbmpc_ros` bridge.
+The important constraint is Python compatibility. `sbmpc` currently requires Python 3.12 and JAX >= 0.8, so this repo targets ROS 2 Jazzy on Ubuntu 24.04. ROS 2 Humble uses Python 3.10 and is not a good single-process target for the future `sbmpc_ros` bridge.
 
 ## What This Image Provides
 
@@ -14,10 +14,10 @@ The unified image is intended to be the base for simulation and later robot-side
 - `linear-feedback-controller` built from source.
 - `linear-feedback-controller-msgs` built from source.
 - `franka_ros2` built from source from its Jazzy branch, plus its upstream dependencies imported from `dependency.repos`.
-- Pixi installed globally, so `sbmpc-panda` can keep using its own Pixi environment.
+- Pixi installed globally, so `sbmpc` can keep using its own Pixi environment.
 - NVIDIA container runtime support through Docker `--gpus all` / Compose `gpus: all`.
 
-The image does not copy `sbmpc-panda` into the build by default. It mounts your local checkout into `/workspace/sbmpc-panda`, which keeps iteration fast and avoids rebuilding the ROS image every time controller code changes.
+The image does not copy `sbmpc` into the build by default. It mounts your local checkout into `/workspace/sbmpc`, which keeps iteration fast and avoids rebuilding the ROS image every time controller code changes.
 
 ## Repository Layout
 
@@ -27,7 +27,7 @@ The image does not copy `sbmpc-panda` into the build by default. It mounts your 
 - `scripts/build_unified.sh`: builds the image.
 - `scripts/run_dev.sh`: starts and enters the development container.
 - `scripts/enter.sh`: enters an already running development container.
-- `scripts/check_unified_env.sh`: verifies ROS, LFC, GPU/JAX, and `sbmpc-panda` integration from inside the container.
+- `scripts/check_unified_env.sh`: verifies ROS, LFC, GPU/JAX, and `sbmpc` integration from inside the container.
 - `scripts/pixi_ros_run.sh`: runs Pixi commands with ROS sourced while keeping Pixi packages ahead of ROS Python packages.
 
 ## Prerequisites
@@ -77,10 +77,10 @@ Start and enter the container:
 ./scripts/run_dev.sh
 ```
 
-The container still mounts the algorithm repo at `/workspace/sbmpc-panda` internally. If your `sbmpc` checkout is elsewhere, pass an absolute path:
+If your `sbmpc` checkout is elsewhere, pass an absolute path:
 
 ```bash
-SBMPC_PANDA_DIR=/path/to/sbmpc ./scripts/run_dev.sh
+SBMPC_DIR=/path/to/sbmpc ./scripts/run_dev.sh
 ```
 
 Inside the container, validate the full environment:
@@ -89,14 +89,14 @@ Inside the container, validate the full environment:
 /workspace/sbmpc_containers/scripts/check_unified_env.sh
 ```
 
-The check script verifies that ROS 2, LFC packages, and `sbmpc-panda` Pixi/JAX CUDA setup can coexist in the same container.
+The check script verifies that ROS 2, LFC packages, and `sbmpc` Pixi/JAX CUDA setup can coexist in the same container.
 
-## Expected sbmpc-panda Workflow
+## Expected sbmpc Workflow
 
 Inside the container:
 
 ```bash
-cd /workspace/sbmpc-panda
+cd /workspace/sbmpc
 pixi install -e cuda
 pixi run -e cuda python -m pytest tests/test_mppi_gains.py tests/test_panda_pregrasp.py -q
 pixi run -e cuda python examples/panda_pick_and_place.py --gains
@@ -112,7 +112,7 @@ For GUI simulation, make sure host X11 access is enabled. `scripts/run_dev.sh` c
 
 ## Design Decision: One Unified Container
 
-This repo intentionally avoids a two-container split. The future `sbmpc_ros` process needs to publish feedforward torques and Riccati gains to LFC message types while running the same controller code used in simulation. Keeping ROS 2 Jazzy, LFC, Franka ROS 2, and `sbmpc-panda` in one image removes Python-version and IPC boundary problems.
+This repo intentionally avoids a two-container split. The future `sbmpc_ros` process needs to publish feedforward torques and Riccati gains to LFC message types while running the same controller code used in simulation. Keeping ROS 2 Jazzy, LFC, Franka ROS 2, and `sbmpc` in one image removes Python-version and IPC boundary problems.
 
 If the image grows too heavy, the next optimization should be multi-stage Docker builds or a separate runtime target in the same Dockerfile, not splitting controller and ROS into separate containers.
 
@@ -120,4 +120,4 @@ If the image grows too heavy, the next optimization should be multi-stage Docker
 
 - Franka ROS 2 and LFC are source dependencies; upstream Jazzy changes can break builds. The LFC repositories are pinned to released tags, while `franka_ros2` follows its `jazzy` branch.
 - Some Gazebo/Franka packages require graphics or `/dev/dri` access for interactive simulation. The compose file mounts X11 and `/dev/dri` for this reason.
-- JAX CUDA support is provided by the `sbmpc-panda` Pixi environment plus the NVIDIA container runtime. If JAX does not see the GPU, first verify `nvidia-smi` inside the container, then rerun the Pixi CUDA environment checks.
+- JAX CUDA support is provided by the `sbmpc` Pixi environment plus the NVIDIA container runtime. If JAX does not see the GPU, first verify `nvidia-smi` inside the container, then rerun the Pixi CUDA environment checks.

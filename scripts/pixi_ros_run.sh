@@ -8,14 +8,14 @@ fi
 set -u
 
 PIXI_ENV=${PIXI_ENV:-cuda}
-SBMPC_PANDA_DIR=${SBMPC_PANDA_DIR:-/workspace/sbmpc-panda}
+SBMPC_DIR=${SBMPC_DIR:-/workspace/sbmpc}
 
-if [ ! -d "${SBMPC_PANDA_DIR}" ]; then
-  echo "Missing sbmpc-panda checkout: ${SBMPC_PANDA_DIR}" >&2
+if [ ! -d "${SBMPC_DIR}" ]; then
+  echo "Missing sbmpc checkout: ${SBMPC_DIR}" >&2
   exit 1
 fi
 
-cd "${SBMPC_PANDA_DIR}"
+cd "${SBMPC_DIR}"
 pixi install -e "${PIXI_ENV}"
 
 PIXI_PYTHONPATH=$(pixi run -e "${PIXI_ENV}" python -c 'import sysconfig; paths=sysconfig.get_paths(); print(":".join(dict.fromkeys([paths["purelib"], paths["platlib"]])))')
