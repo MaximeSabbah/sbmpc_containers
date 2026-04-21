@@ -24,4 +24,14 @@ pixi install -e "${PIXI_ENV}"
 PIXI_PYTHONPATH=$(pixi run -e "${PIXI_ENV}" python -c 'import sysconfig; paths=sysconfig.get_paths(); print(":".join(dict.fromkeys([paths["purelib"], paths["platlib"]])))')
 export PYTHONPATH="${PIXI_PYTHONPATH}:${PYTHONPATH:-}:/usr/lib/python3/dist-packages:/usr/local/lib/python3.12/dist-packages"
 
-exec pixi run -e "${PIXI_ENV}" "$@"
+# Run inside the activated pixi env so we can fix LD_LIBRARY_PATH *after* conda activation
+exec pixi run -e "${PIXI_ENV}" bash -c '
+NVIDIA_LIBS=$(python -c "
+import glob, os, sysconfig
+site = sysconfig.get_paths()[\"purelib\"]
+print(\":\".join(glob.glob(os.path.join(site, \"nvidia\", \"*\", \"lib\"))))
+" 2>/dev/null || true)
+if [ -n "$NVIDIA_LIBS" ]; then
+  export LD_LIBRARY_PATH="${NVIDIA_LIBS}:${LD_LIBRARY_PATH:-}"
+fi
+exec "$@"' -- "$@"
