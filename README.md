@@ -1,6 +1,6 @@
 # sbmpc_containers
 
-Container definitions for deploying the `sbmpc` controller with ROS 2, Gazebo, Franka ROS 2, and `linear-feedback-controller` in one environment.
+Container definitions for deploying the `sbmpc` controller with ROS 2, MuJoCo, Franka ROS 2, and `linear-feedback-controller` in one environment.
 
 The important constraint is Python compatibility. `sbmpc` currently requires Python 3.12 and JAX >= 0.8, so this repo targets ROS 2 Jazzy on Ubuntu 24.04. ROS 2 Humble uses Python 3.10 and is not a good single-process target for the future `sbmpc_ros` bridge.
 
@@ -9,7 +9,7 @@ The important constraint is Python compatibility. `sbmpc` currently requires Pyt
 The unified image is intended to be the base for simulation and later robot-side deployment:
 
 - ROS 2 Jazzy desktop tooling.
-- Gazebo / `ros_gz` integration packages available from ROS apt packages.
+- `mujoco_ros2_control` built from the pinned source manifest in `repos/mujoco_ros2_control.repos`.
 - `ros2_control`, `ros2_controllers`, controller manager, and visualization utilities.
 - `linear-feedback-controller` built from source.
 - `linear-feedback-controller-msgs` built from source.
@@ -44,8 +44,9 @@ confuse VSCode.
 ## Repository Layout
 
 - `docker/unified-jazzy-cuda.Dockerfile`: the main image definition.
-- `repos/franka_lfc_jazzy.repos`: source repositories imported into the ROS workspace.
+- `repos/franka_lfc_jazzy.repos`: Franka and LFC source repositories imported into the dependency workspace.
 - `repos/agimus_franka_description.repos`: override manifest used to replace upstream `franka_description` with the Agimus fork.
+- `repos/mujoco_ros2_control.repos`: pinned MuJoCo ros2_control source dependency.
 - `compose/dev.yaml`: development container with host networking, GPU access, X11, local source mounts, and a dedicated `/workspace/ros2_ws` colcon workspace.
 - `scripts/build_unified.sh`: builds the image.
 - `scripts/setup_ros2_ws.sh`: creates the host-side `ros2_ws` directory used for colcon artifacts.
@@ -60,7 +61,7 @@ Install on the host:
 
 - Docker Engine with the Compose v2 plugin.
 - NVIDIA Container Toolkit for GPU access.
-- X11 access if you want Gazebo/RViz windows from the container.
+- X11 access if you want MuJoCo/RViz windows from the container.
 
 For GPU validation, this should work on the host before using the image:
 
@@ -162,7 +163,7 @@ When ROS is sourced and you need to run `sbmpc` from Pixi, prefer the wrapper so
 /workspace/sbmpc_containers/scripts/pixi_ros_run.sh python -c "import rclpy, sbmpc; print('ok')"
 ```
 
-For GUI simulation, make sure host X11 access is enabled. `scripts/run_dev.sh` calls `xhost +local:docker` when `DISPLAY` is set.
+For GUI simulation, make sure host X11 access is enabled. MuJoCo validation can run headless, and `scripts/run_dev.sh` calls `xhost +local:docker` when `DISPLAY` is set.
 
 For an SSH-forwarded session from your laptop to a lab machine:
 
@@ -176,7 +177,7 @@ cd /path/to/sbmpc_containers
 `DISPLAY`, which is required for GUI apps launched from inside Docker to use the
 SSH-forwarded X server on your laptop.
 
-The `sbmpc_franka_lfc_sim.launch.py` and `sbmpc_franka_lfc_real.launch.py`
+The `sbmpc_franka_lfc_mujoco_sim.launch.py` and `sbmpc_franka_lfc_real.launch.py`
 bridge actions launch the planner node through `scripts/pixi_ros_run.sh`
 automatically. You can still override the runtime with launch arguments such as
 `sbmpc_dir:=...`, `pixi_env:=...`, and
@@ -185,15 +186,15 @@ automatically. You can still override the runtime with launch arguments such as
 Practical advice:
 
 - `rviz2` over SSH X11 is usually workable for short checks.
-- full Gazebo / `gz sim` over SSH X11 can be very slow or unstable, especially with 3D rendering.
+- full GUI simulation over SSH X11 can be very slow or unstable, especially with 3D rendering.
 - the more robust option for “seeing the robot” from home is a remote desktop path on `hako` such as TurboVNC, NoMachine, Xpra, or an existing lab desktop session, then running the Docker container from inside that desktop session.
 - for quick non-visual validation from SSH only, prefer the headless launch:
 
 ```bash
 cd /workspace/ros2_ws
 source install/setup.bash
-ros2 launch sbmpc_bringup sbmpc_franka_lfc_sim.launch.py \
-  gz_args:='empty.sdf -r -s' use_rviz:=false
+ros2 launch sbmpc_bringup sbmpc_franka_lfc_mujoco_sim.launch.py \
+  headless:=true enable_nonzero_control:=true
 ```
 
 ## Design Decision: One Unified Container
@@ -205,5 +206,5 @@ If the image grows too heavy, the next optimization should be multi-stage Docker
 ## Known Build Risks
 
 - Franka ROS 2 and LFC are source dependencies; upstream Jazzy changes can break builds. The LFC repositories are pinned to released tags, while `franka_ros2` follows its `jazzy` branch.
-- Some Gazebo/Franka packages require graphics or `/dev/dri` access for interactive simulation. The compose file mounts X11, forwards Xauthority, and exposes `/dev/dri` for this reason.
+- Some Franka and simulation tools require graphics or `/dev/dri` access for interactive visualization. The compose file mounts X11, forwards Xauthority, and exposes `/dev/dri` for this reason.
 - JAX CUDA support is provided by the `sbmpc` Pixi environment plus the NVIDIA container runtime. If JAX does not see the GPU, first verify `nvidia-smi` inside the container, then rerun the Pixi CUDA environment checks.

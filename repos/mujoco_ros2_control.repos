@@ -1,0 +1,9 @@
+repositories:
+  mujoco_vendor:
+    type: git
+    url: https://github.com/pal-robotics/mujoco_vendor.git
+    version: 0.0.8
+  mujoco_ros2_control:
+    type: git
+    url: https://github.com/ros-controls/mujoco_ros2_control.git
+    version: 0.0.2

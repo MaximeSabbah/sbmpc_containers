@@ -55,7 +55,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-${ROS_DISTRO}-joint-state-broadcaster \
     ros-${ROS_DISTRO}-joint-state-publisher \
     ros-${ROS_DISTRO}-robot-state-publisher \
-    ros-${ROS_DISTRO}-ros-gz \
     ros-${ROS_DISTRO}-ros2-control \
     ros-${ROS_DISTRO}-ros2-controllers \
     ros-${ROS_DISTRO}-rviz2 \
@@ -80,6 +79,7 @@ RUN if ! getent group ${USER_GID} >/dev/null; then groupadd --gid ${USER_GID} ${
 WORKDIR /opt/sbmpc_deps_ws
 COPY repos/franka_lfc_jazzy.repos /tmp/franka_lfc_jazzy.repos
 COPY repos/agimus_franka_description.repos /tmp/agimus_franka_description.repos
+COPY repos/mujoco_ros2_control.repos /tmp/mujoco_ros2_control.repos
 
 RUN mkdir -p src \
     && vcs import --shallow --recursive src < /tmp/franka_lfc_jazzy.repos \
@@ -87,7 +87,8 @@ RUN mkdir -p src \
          vcs import --shallow --recursive src < src/franka_ros2/dependency.repos; \
        fi \
     && rm -rf src/franka_description \
-    && vcs import --shallow --recursive src < /tmp/agimus_franka_description.repos
+    && vcs import --shallow --recursive src < /tmp/agimus_franka_description.repos \
+    && vcs import --shallow --recursive src < /tmp/mujoco_ros2_control.repos
 
 RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
     && apt-get update \
