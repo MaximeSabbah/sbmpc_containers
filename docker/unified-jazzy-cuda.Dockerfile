@@ -21,6 +21,7 @@ ENV PIXI_HOME=/opt/pixi
 ENV PATH=/opt/pixi/bin:${PATH}
 ENV CCACHE_DIR=/ccache
 ENV ROS2_WS=/workspace/ros2_ws
+ENV SBMPC_DEPS_PACKAGES="franka_bringup franka_gripper franka_hardware franka_robot_state_broadcaster linear_feedback_controller linear_feedback_controller_msgs mujoco_ros2_control"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash-completion \
@@ -92,11 +93,20 @@ RUN mkdir -p src \
 
 RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
     && apt-get update \
-    && rosdep install --from-paths src --ignore-src -y --rosdistro ${ROS_DISTRO} \
+    && colcon list --base-paths src \
+       --packages-up-to ${SBMPC_DEPS_PACKAGES} \
+       --paths-only > /tmp/sbmpc_deps_paths.txt \
+    && xargs -a /tmp/sbmpc_deps_paths.txt rosdep install \
+       --from-paths \
+       --ignore-src \
+       -y \
+       --rosdistro ${ROS_DISTRO} \
+       --skip-keys "franka_description zed_wrapper" \
     && rm -rf /var/lib/apt/lists/*
 
 RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
     && colcon build --symlink-install \
+       --packages-up-to ${SBMPC_DEPS_PACKAGES} \
        --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DBUILD_TESTS=OFF
 
 RUN mkdir -p /workspace /workspace/ros2_ws/src /ccache \

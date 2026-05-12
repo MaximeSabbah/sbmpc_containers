@@ -109,6 +109,10 @@ cd ~/sbmpc_stack/sbmpc_containers
 ./scripts/build_unified.sh
 ```
 
+Only continue to `run_dev.sh` if the image build succeeds. If the build fails,
+there is no local `sbmpc/unified-jazzy-cuda:latest` image yet, and Docker will
+try to pull that private/local image name from Docker Hub.
+
 Start and enter the container:
 
 ```bash
@@ -345,3 +349,8 @@ If the image grows too heavy, the next optimization should be multi-stage Docker
 - Franka ROS 2 and LFC are source dependencies; upstream Jazzy changes can break builds. The LFC repositories are pinned to released tags, while `franka_ros2` follows its `jazzy` branch and the Agimus `franka_description` override follows `main`.
 - Some Franka and simulation tools require graphics or `/dev/dri` access for interactive visualization. The compose file mounts X11, forwards Xauthority, and exposes `/dev/dri` for this reason.
 - JAX CUDA support is provided by the `sbmpc` Pixi environment plus the NVIDIA container runtime. If JAX does not see the GPU, first verify `nvidia-smi` inside the container, then rerun the Pixi CUDA environment checks.
+
+If `rosdep install` reports unresolved keys such as `franka_description` or
+`zed_wrapper`, make sure you have the Dockerfile revision that limits the
+dependency workspace build to the packages SB-MPC actually uses and skips those
+optional/source-provided rosdep keys.
