@@ -57,10 +57,12 @@ confuse VSCode.
 
 ## Prerequisites
 
-Install on the host:
+Install on the host robot PC:
 
 - Docker Engine with the Compose v2 plugin.
 - NVIDIA Container Toolkit for GPU access.
+- A working NVIDIA driver. `nvidia-smi` must work on the host.
+- Git.
 - X11 access if you want MuJoCo/RViz windows from the container.
 
 For GPU validation, this should work on the host before using the image:
@@ -68,6 +70,140 @@ For GPU validation, this should work on the host before using the image:
 ```bash
 docker run --rm --gpus all nvidia/cuda:12.6.3-base-ubuntu24.04 nvidia-smi
 ```
+
+No host ROS, MuJoCo, Pixi, Franka ROS 2, or `linear-feedback-controller`
+installation is required. Those are provided by the Docker image or by the
+mounted `sbmpc` Pixi environment.
+
+## Fresh Robot PC Setup
+
+Start from a directory that will contain the three source checkouts and the ROS
+workspace artifacts:
+
+```bash
+mkdir -p ~/sbmpc_stack
+cd ~/sbmpc_stack
+
+git clone https://github.com/MaximeSabbah/sbmpc_containers.git
+git clone https://github.com/MaximeSabbah/sbmpc.git
+git clone https://github.com/MaximeSabbah/sbmpc_ros.git
+mkdir -p ros2_ws
+```
+
+For the current controller work, use the same branches or commits that were
+validated on the development PC before moving to the robot PC. The default
+layout expected by `scripts/run_dev.sh` is:
+
+```text
+~/sbmpc_stack/
+  sbmpc_containers/
+  sbmpc/
+  sbmpc_ros/
+  ros2_ws/
+```
+
+Build the unified image:
+
+```bash
+cd ~/sbmpc_stack/sbmpc_containers
+./scripts/build_unified.sh
+```
+
+Start and enter the container:
+
+```bash
+./scripts/run_dev.sh
+```
+
+Inside the container, validate the full environment:
+
+```bash
+/workspace/sbmpc_containers/scripts/check_unified_env.sh
+```
+
+This check covers:
+
+- ROS 2 Jazzy imports.
+- `linear_feedback_controller` and message packages.
+- the Agimus `franka_description` replacement.
+- NVIDIA/JAX CUDA visibility.
+- Python `mujoco`, MJX, Pinocchio, `jaxsim`, and `sbmpc` imports.
+- ROS imports from inside the `sbmpc` Pixi CUDA environment.
+
+Then build the local ROS overlay:
+
+```bash
+cd /workspace/ros2_ws
+colcon build --symlink-install --packages-select sbmpc_ros_bridge sbmpc_bringup
+source install/setup.bash
+```
+
+Run the real robot launch with the current default robot IP and conservative
+40 Hz controller preset:
+
+```bash
+ros2 launch sbmpc_bringup sbmpc_franka_lfc_real.launch.py
+```
+
+The explicit equivalent is:
+
+```bash
+ros2 launch sbmpc_bringup sbmpc_franka_lfc_real.launch.py \
+  robot_ip:=172.17.0.1 \
+  bridge_params_file:=/workspace/sbmpc_ros/sbmpc_bringup/config/sbmpc_bridge_exact_async_40hz.yaml
+```
+
+To test another bridge preset without editing code:
+
+```bash
+ros2 launch sbmpc_bringup sbmpc_franka_lfc_real.launch.py \
+  robot_ip:=172.17.0.1 \
+  bridge_params_file:=/workspace/sbmpc_ros/sbmpc_bringup/config/sbmpc_bridge_exact_async.yaml
+```
+
+## What Is Recreated By The Container
+
+The Docker image builds and installs these ROS-side dependencies in
+`/opt/sbmpc_deps_ws`:
+
+- ROS 2 Jazzy desktop base.
+- `franka_ros2` and its upstream dependencies.
+- `linear-feedback-controller`.
+- `linear-feedback-controller-msgs`.
+- Agimus `franka_description`, replacing the upstream package while keeping the
+  ROS package name.
+- `mujoco_vendor` and `mujoco_ros2_control`.
+
+The image also installs Pixi globally. The actual `sbmpc` Python/JAX/MuJoCo
+environment is not baked into the image; it is installed from the mounted
+`/workspace/sbmpc` checkout through `pixi install -e cuda`. This uses the
+`sbmpc` `pyproject.toml` and `pixi.lock`, so a fresh PC does not need a manual
+Python, JAX, Pinocchio, or MuJoCo setup.
+
+In particular:
+
+- live MuJoCo ROS simulation uses `mujoco_vendor` and `mujoco_ros2_control`
+  from the Docker image.
+- controller-side Python MuJoCo/MJX uses the `mujoco-mjx` dependency from the
+  `sbmpc` Pixi environment.
+- visualization/replay uses the same Pixi/ROS wrapper scripts as the current
+  development PC.
+
+## Reproducibility Notes
+
+For practical deployment, the important source checkouts are:
+
+- `sbmpc_containers`
+- `sbmpc`
+- `sbmpc_ros`
+
+Those should be checked out to the same commits that were tested on the
+development PC. The container build also imports third-party dependencies from
+the `.repos` files in this repository. Some entries are version tags, while
+some intentionally track active branches such as `franka_ros2` `jazzy` and the
+Agimus `franka_description` `main` branch. Once robot bringup is stable, pin
+those moving entries to exact commits before rebuilding the robot PC image if
+bit-for-bit reproducibility is required.
 
 ## Build
 
@@ -87,10 +223,11 @@ BASE_IMAGE=osrf/ros:jazzy-desktop IMAGE_NAME=sbmpc/unified-jazzy-cuda:latest ./s
 
 ## Run
 
-The default compose file expects this directory structure:
+The default compose file expects `sbmpc_containers`, `sbmpc`, `sbmpc_ros`, and
+`ros2_ws` to be siblings:
 
 ```text
-/home/msabbah/Desktop/
+~/sbmpc_stack/
   sbmpc_containers/
   sbmpc/
   sbmpc_ros/
@@ -133,8 +270,8 @@ Inside the container:
 
 ```bash
 cd /workspace/ros2_ws
-colcon build --symlink-install --packages-select sbmpc_ros_bridge
-colcon test --packages-select sbmpc_ros_bridge --event-handlers console_direct+
+colcon build --symlink-install --packages-select sbmpc_ros_bridge sbmpc_bringup
+colcon test --packages-select sbmpc_ros_bridge sbmpc_bringup --event-handlers console_direct+
 colcon test-result --verbose
 ```
 
@@ -205,6 +342,6 @@ If the image grows too heavy, the next optimization should be multi-stage Docker
 
 ## Known Build Risks
 
-- Franka ROS 2 and LFC are source dependencies; upstream Jazzy changes can break builds. The LFC repositories are pinned to released tags, while `franka_ros2` follows its `jazzy` branch.
+- Franka ROS 2 and LFC are source dependencies; upstream Jazzy changes can break builds. The LFC repositories are pinned to released tags, while `franka_ros2` follows its `jazzy` branch and the Agimus `franka_description` override follows `main`.
 - Some Franka and simulation tools require graphics or `/dev/dri` access for interactive visualization. The compose file mounts X11, forwards Xauthority, and exposes `/dev/dri` for this reason.
 - JAX CUDA support is provided by the `sbmpc` Pixi environment plus the NVIDIA container runtime. If JAX does not see the GPU, first verify `nvidia-smi` inside the container, then rerun the Pixi CUDA environment checks.
