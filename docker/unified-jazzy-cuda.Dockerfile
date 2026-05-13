@@ -22,7 +22,7 @@ ENV PATH=/opt/pixi/bin:${PATH}
 ENV CCACHE_DIR=/ccache
 ENV ROS2_WS=/workspace/ros2_ws
 ENV SBMPC_DEPS_PACKAGES="franka_bringup franka_gripper franka_hardware franka_robot_state_broadcaster linear_feedback_controller linear_feedback_controller_msgs mujoco_ros2_control"
-ENV SBMPC_DEPS_SKIP_PACKAGES="franka_example_controllers franka_vision_and_manipulation_kit franka_gazebo_bringup franka_fr3_moveit_config franka_mobile_fr3_duo_moveit_config franka_mobile_sensors"
+ENV SBMPC_DEPS_SKIP_PACKAGES="franka_vision_and_manipulation_kit franka_gazebo_bringup franka_fr3_moveit_config franka_mobile_fr3_duo_moveit_config franka_mobile_sensors"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash-completion \
