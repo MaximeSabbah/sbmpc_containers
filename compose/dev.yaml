@@ -14,7 +14,7 @@ services:
       QT_X11_NO_MITSHM: "1"
       NVIDIA_VISIBLE_DEVICES: ${NVIDIA_VISIBLE_DEVICES:-all}
       NVIDIA_DRIVER_CAPABILITIES: ${NVIDIA_DRIVER_CAPABILITIES:-all}
-      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-29}
       RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}
       ROS2_WS: /workspace/ros2_ws
     volumes:
