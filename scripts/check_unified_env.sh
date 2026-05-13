@@ -23,6 +23,7 @@ ros2 pkg prefix linear_feedback_controller
 ros2 pkg prefix linear_feedback_controller_msgs
 
 echo "== Franka Description =="
+ros2 pkg prefix agimus_franka_description
 ros2 pkg prefix franka_description
 if [ -d /opt/sbmpc_deps_ws/src/franka_description/.git ]; then
   git -C /opt/sbmpc_deps_ws/src/franka_description remote get-url origin

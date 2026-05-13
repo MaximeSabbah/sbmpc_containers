@@ -21,7 +21,7 @@ ENV PIXI_HOME=/opt/pixi
 ENV PATH=/opt/pixi/bin:${PATH}
 ENV CCACHE_DIR=/ccache
 ENV ROS2_WS=/workspace/ros2_ws
-ENV SBMPC_DEPS_PACKAGES="franka_bringup franka_gripper franka_hardware franka_robot_state_broadcaster linear_feedback_controller linear_feedback_controller_msgs mujoco_ros2_control"
+ENV SBMPC_DEPS_PACKAGES="agimus_franka_description franka_bringup franka_gripper franka_hardware franka_robot_state_broadcaster linear_feedback_controller linear_feedback_controller_msgs mujoco_ros2_control"
 ENV SBMPC_DEPS_SKIP_PACKAGES="franka_vision_and_manipulation_kit franka_gazebo_bringup franka_fr3_moveit_config franka_mobile_fr3_duo_moveit_config franka_mobile_sensors"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -112,7 +112,10 @@ RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
     && colcon build --symlink-install \
        --packages-up-to ${SBMPC_DEPS_PACKAGES} \
        --packages-skip ${SBMPC_DEPS_SKIP_PACKAGES} \
-       --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DBUILD_TESTS=OFF
+       --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DBUILD_TESTS=OFF \
+    && mkdir -p install/agimus_franka_description/share/ament_index/resource_index/packages \
+    && touch install/agimus_franka_description/share/ament_index/resource_index/packages/franka_description \
+    && ln -sfn agimus_franka_description install/agimus_franka_description/share/franka_description
 
 RUN mkdir -p /workspace /workspace/ros2_ws/src /ccache \
     && chown -R ${USERNAME}:${USERNAME} /workspace /ccache /opt/sbmpc_deps_ws

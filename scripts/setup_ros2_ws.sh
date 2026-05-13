@@ -12,7 +12,8 @@ mkdir -p "${ROS2_WS_DIR}/src"
 ROS_SRC_LINK="${ROS2_WS_DIR}/src/sbmpc_ros"
 if [ -d "${SBMPC_ROS_DIR}" ]; then
   if [ -L "${ROS_SRC_LINK}" ] || [ ! -e "${ROS_SRC_LINK}" ]; then
-    ln -sfn "${SBMPC_ROS_DIR}" "${ROS_SRC_LINK}"
+    SBMPC_ROS_LINK_TARGET=$(realpath --relative-to="$(dirname "${ROS_SRC_LINK}")" "${SBMPC_ROS_DIR}")
+    ln -sfn "${SBMPC_ROS_LINK_TARGET}" "${ROS_SRC_LINK}"
   fi
 fi
 
