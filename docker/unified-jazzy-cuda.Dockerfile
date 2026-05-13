@@ -56,6 +56,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-${ROS_DISTRO}-controller-manager \
     ros-${ROS_DISTRO}-joint-state-broadcaster \
     ros-${ROS_DISTRO}-joint-state-publisher \
+    ros-${ROS_DISTRO}-moveit-core \
+    ros-${ROS_DISTRO}-moveit-msgs \
     ros-${ROS_DISTRO}-robot-state-publisher \
     ros-${ROS_DISTRO}-ros2-control \
     ros-${ROS_DISTRO}-ros2-controllers \
