@@ -354,3 +354,7 @@ If `rosdep install` reports unresolved keys such as `franka_description` or
 `zed_wrapper`, make sure you have the Dockerfile revision that limits the
 dependency workspace build to the packages SB-MPC actually uses and skips those
 optional/source-provided rosdep keys.
+
+If the build reaches `franka_example_controllers` and fails on missing
+`moveit_core`, update to the Dockerfile revision that skips optional Franka
+example/mobile/vision packages. They are not required for SB-MPC bringup.

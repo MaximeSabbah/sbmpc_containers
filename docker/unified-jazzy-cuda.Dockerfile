@@ -22,6 +22,7 @@ ENV PATH=/opt/pixi/bin:${PATH}
 ENV CCACHE_DIR=/ccache
 ENV ROS2_WS=/workspace/ros2_ws
 ENV SBMPC_DEPS_PACKAGES="franka_bringup franka_gripper franka_hardware franka_robot_state_broadcaster linear_feedback_controller linear_feedback_controller_msgs mujoco_ros2_control"
+ENV SBMPC_DEPS_SKIP_PACKAGES="franka_example_controllers franka_mobile franka_vision_and_manipulation_kit franka_gazebo_bringup franka_fr3_moveit_config franka_mobile_fr3_duo_moveit_config franka_mobile_sensors"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash-completion \
@@ -95,6 +96,7 @@ RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
     && apt-get update \
     && colcon list --base-paths src \
        --packages-up-to ${SBMPC_DEPS_PACKAGES} \
+       --packages-skip ${SBMPC_DEPS_SKIP_PACKAGES} \
        --paths-only > /tmp/sbmpc_deps_paths.txt \
     && xargs -a /tmp/sbmpc_deps_paths.txt rosdep install \
        --from-paths \
@@ -107,6 +109,7 @@ RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
 RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
     && colcon build --symlink-install \
        --packages-up-to ${SBMPC_DEPS_PACKAGES} \
+       --packages-skip ${SBMPC_DEPS_SKIP_PACKAGES} \
        --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DBUILD_TESTS=OFF
 
 RUN mkdir -p /workspace /workspace/ros2_ws/src /ccache \
