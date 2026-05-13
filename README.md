@@ -135,7 +135,7 @@ The explicit equivalent is:
 
 ```bash
 ros2 launch sbmpc_bringup sbmpc_franka_lfc_real.launch.py \
-  robot_ip:=172.17.0.1 \
+  robot_ip:=172.17.1.2 \
   bridge_params_file:=/workspace/sbmpc_ros/sbmpc_bringup/config/sbmpc_bridge_exact_async_40hz.yaml
 ```
 
@@ -143,7 +143,7 @@ To test another bridge preset without editing code:
 
 ```bash
 ros2 launch sbmpc_bringup sbmpc_franka_lfc_real.launch.py \
-  robot_ip:=172.17.0.1 \
+  robot_ip:=172.17.1.2 \
   bridge_params_file:=/workspace/sbmpc_ros/sbmpc_bringup/config/sbmpc_bridge_exact_async.yaml
 ```
 
