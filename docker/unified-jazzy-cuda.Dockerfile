@@ -103,7 +103,7 @@ RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
        --ignore-src \
        -y \
        --rosdistro ${ROS_DISTRO} \
-       --skip-keys "franka_description zed_wrapper" \
+       --skip-keys "franka_description zed_wrapper ${SBMPC_DEPS_SKIP_PACKAGES}" \
     && rm -rf /var/lib/apt/lists/*
 
 RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
