@@ -193,15 +193,21 @@ It is normal for `/workspace/ros2_ws` to contain only `src/` before the local
 ROS overlay is built. The `build/`, `install/`, and `log/` directories appear
 after running `colcon build`.
 
-The Franka robot description comes from
-`agimus-project/agimus-franka-description`. The ROS package name is
-`agimus_franka_description`, and the image also provides a `franka_description`
-compatibility alias for upstream Franka ROS 2 packages that still look up the
-old package name. Both checks should resolve:
+The real-robot Franka stack comes from the Agimus forks pinned in
+`repos/franka_lfc_jazzy.repos` and `repos/agimus_franka_description.repos`:
+`agimus-project/agimus-franka-ros2`, `agimus-project/agimus-libfranka`,
+`agimus-project/agimus-libfranka-common`, and
+`agimus-project/agimus-franka-description`. The image still provides a
+`franka_description` compatibility alias for packages that look up the old
+description package name. These checks should resolve:
 
 ```bash
 ros2 pkg prefix agimus_franka_description
 ros2 pkg prefix franka_description
+ros2 pkg prefix agimus_franka_bringup
+ros2 pkg prefix agimus_franka_hardware
+ros2 pkg prefix agimus_franka_gripper
+ros2 pkg prefix agimus_franka_robot_state_broadcaster
 ```
 
 ## Notes

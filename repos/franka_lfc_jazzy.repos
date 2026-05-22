@@ -7,7 +7,15 @@ repositories:
     type: git
     url: https://github.com/loco-3d/linear-feedback-controller-msgs.git
     version: v1.2.2
-  franka_ros2:
+  agimus_libfranka_common:
     type: git
-    url: https://github.com/frankarobotics/franka_ros2.git
-    version: jazzy
+    url: https://github.com/agimus-project/agimus-libfranka-common.git
+    version: 298b87df9f96348c2e9f19342fecc71d667bb64c
+  agimus_libfranka:
+    type: git
+    url: https://github.com/agimus-project/agimus-libfranka.git
+    version: fcc87638ebe79028a03111c3664cf92291f215a3
+  agimus_franka_ros2:
+    type: git
+    url: https://github.com/agimus-project/agimus-franka-ros2.git
+    version: 2719804b4ed7b2d4ef12d8ae4be34e0a5e1ac5cc

@@ -21,8 +21,8 @@ ENV PIXI_HOME=/opt/pixi
 ENV PATH=/opt/pixi/bin:${PATH}
 ENV CCACHE_DIR=/ccache
 ENV ROS2_WS=/workspace/ros2_ws
-ENV SBMPC_DEPS_PACKAGES="agimus_franka_description franka_bringup franka_gripper franka_hardware franka_robot_state_broadcaster linear_feedback_controller linear_feedback_controller_msgs mujoco_ros2_control"
-ENV SBMPC_DEPS_SKIP_PACKAGES="franka_vision_and_manipulation_kit franka_gazebo_bringup franka_fr3_moveit_config franka_mobile_fr3_duo_moveit_config franka_mobile_sensors"
+ENV SBMPC_DEPS_PACKAGES="agimus_franka_description agimus_libfranka_common agimus_libfranka agimus_franka_bringup agimus_franka_gripper agimus_franka_hardware agimus_franka_robot_state_broadcaster linear_feedback_controller linear_feedback_controller_msgs mujoco_ros2_control"
+ENV SBMPC_DEPS_SKIP_PACKAGES="agimus_franka_example_controllers agimus_franka_fr3_moveit_config agimus_franka_gazebo_bringup"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash-completion \
@@ -87,9 +87,6 @@ COPY repos/mujoco_ros2_control.repos /tmp/mujoco_ros2_control.repos
 
 RUN mkdir -p src \
     && vcs import --shallow --recursive src < /tmp/franka_lfc_jazzy.repos \
-    && if [ -f src/franka_ros2/dependency.repos ]; then \
-         vcs import --shallow --recursive src < src/franka_ros2/dependency.repos; \
-       fi \
     && rm -rf src/franka_description \
     && vcs import --shallow --recursive src < /tmp/agimus_franka_description.repos \
     && vcs import --shallow --recursive src < /tmp/mujoco_ros2_control.repos

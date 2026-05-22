@@ -2,4 +2,4 @@ repositories:
   franka_description:
     type: git
     url: https://github.com/agimus-project/agimus-franka-description.git
-    version: main
+    version: fb4f03582d2492384a69f77e3e85fbc006119a2d

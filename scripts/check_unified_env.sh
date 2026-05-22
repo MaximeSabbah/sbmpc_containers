@@ -29,6 +29,16 @@ if [ -d /opt/sbmpc_deps_ws/src/franka_description/.git ]; then
   git -C /opt/sbmpc_deps_ws/src/franka_description remote get-url origin
 fi
 
+echo "== Agimus Franka ROS 2 =="
+ros2 pkg prefix agimus_franka_bringup
+ros2 pkg prefix agimus_franka_gripper
+ros2 pkg prefix agimus_franka_hardware
+ros2 pkg prefix agimus_franka_robot_state_broadcaster
+if [ -d /opt/sbmpc_deps_ws/src/agimus_franka_ros2/.git ]; then
+  git -C /opt/sbmpc_deps_ws/src/agimus_franka_ros2 remote get-url origin
+  git -C /opt/sbmpc_deps_ws/src/agimus_franka_ros2 rev-parse HEAD
+fi
+
 echo "== ROS workspace =="
 echo "ROS2_WS=${ROS2_WS}"
 mkdir -p "${ROS2_WS}/src"
