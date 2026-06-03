@@ -18,6 +18,20 @@ import rclpy
 print('rclpy import: ok')
 PY
 
+echo "== Realtime permissions =="
+echo "rtprio limit: $(ulimit -r)"
+echo "memlock limit: $(ulimit -l)"
+echo "nice limit: $(ulimit -e 2>/dev/null || echo unavailable)"
+if command -v chrt >/dev/null 2>&1; then
+  if chrt -f 1 true 2>/dev/null; then
+    echo "SCHED_FIFO smoke: ok"
+  else
+    echo "SCHED_FIFO smoke: failed (check Docker ulimits/caps and host rt settings)"
+  fi
+else
+  echo "chrt not found; skipping SCHED_FIFO smoke."
+fi
+
 echo "== LFC packages =="
 ros2 pkg prefix linear_feedback_controller
 ros2 pkg prefix linear_feedback_controller_msgs

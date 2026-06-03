@@ -107,14 +107,19 @@ Start and enter the container:
 ./scripts/run_dev.sh
 ```
 
+The development compose file grants realtime scheduling permissions
+(`rtprio`, `memlock`, `SYS_NICE`) needed by ROS2-control/FCI loops. Recreate the
+container after changing those settings; an already-running container keeps its
+old ulimits.
+
 Inside the container, validate the full environment:
 
 ```bash
 /workspace/sbmpc_containers/scripts/check_unified_env.sh
 ```
 
-This checks ROS, LFC, the Agimus Franka description, GPU/JAX, MuJoCo/MJX,
-and `sbmpc` imports.
+This checks ROS, realtime scheduling permissions, LFC, the Agimus Franka
+description, GPU/JAX, MuJoCo/MJX, and `sbmpc` imports.
 
 Then build the local ROS overlay:
 
@@ -129,6 +134,35 @@ Run the real robot launch with the current default robot IP and conservative
 
 ```bash
 ros2 launch sbmpc_bringup sbmpc_franka_lfc_real.launch.py
+```
+
+The real launch defaults to `max_abs_torque:=12.0` with clipping on planner
+feedforward. Increase that cap only after the LFC command probe shows the first
+`/control` samples are well behaved.
+
+For controller diagnosis, run this in a second terminal before arming or before
+starting automatic nonzero control. It estimates the LFC torque command from
+the live `/sensor` and `/control` messages:
+
+```bash
+ros2 run sbmpc_ros_bridge sbmpc_lfc_control_probe \
+  --sensor-topic /sensor \
+  --control-topic /control \
+  --warn-abs-effort 15.0 \
+  --json
+```
+
+For offline planner replay from the real state, copy `measured_position` and
+`measured_velocity` from the probe JSON into `sbmpc_planner_smoke`:
+
+```bash
+/workspace/sbmpc_containers/scripts/pixi_ros_run.sh \
+  ros2 run sbmpc_ros_bridge sbmpc_planner_smoke \
+  --joint-set fer --planner-mode exact_async_feedback \
+  --planner-horizon 8 --planner-dt 0.025 \
+  --planner-gain-samples-per-cycle 64 --planner-gain-buffer-size 512 \
+  --q '<measured_position JSON list>' \
+  --v '<measured_velocity JSON list>'
 ```
 
 The explicit equivalent is:

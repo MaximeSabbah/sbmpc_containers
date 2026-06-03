@@ -7,6 +7,13 @@ services:
     network_mode: host
     ipc: host
     privileged: true
+    cap_add:
+      - SYS_NICE
+    security_opt:
+      - seccomp=unconfined
+    ulimits:
+      rtprio: 99
+      memlock: -1
     gpus: all
     environment:
       DISPLAY: ${DISPLAY:-}
