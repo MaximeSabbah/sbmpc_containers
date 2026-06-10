@@ -84,12 +84,14 @@ WORKDIR /opt/sbmpc_deps_ws
 COPY repos/franka_lfc_jazzy.repos /tmp/franka_lfc_jazzy.repos
 COPY repos/agimus_franka_description.repos /tmp/agimus_franka_description.repos
 COPY repos/mujoco_ros2_control.repos /tmp/mujoco_ros2_control.repos
+COPY patches/mujoco_ros2_control-sbmpc-runtime.patch /tmp/mujoco_ros2_control-sbmpc-runtime.patch
 
 RUN mkdir -p src \
     && vcs import --shallow --recursive src < /tmp/franka_lfc_jazzy.repos \
     && rm -rf src/franka_description \
     && vcs import --shallow --recursive src < /tmp/agimus_franka_description.repos \
-    && vcs import --shallow --recursive src < /tmp/mujoco_ros2_control.repos
+    && vcs import --shallow --recursive src < /tmp/mujoco_ros2_control.repos \
+    && git -C src/mujoco_ros2_control apply /tmp/mujoco_ros2_control-sbmpc-runtime.patch
 
 RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
     && apt-get update \

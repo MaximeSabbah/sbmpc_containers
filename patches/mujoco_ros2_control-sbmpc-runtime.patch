@@ -1,0 +1,49 @@
+diff --git a/mujoco_ros2_control/src/mujoco_cameras.cpp b/mujoco_ros2_control/src/mujoco_cameras.cpp
+index e6a46ec..c657c8b 100644
+--- a/mujoco_ros2_control/src/mujoco_cameras.cpp
++++ b/mujoco_ros2_control/src/mujoco_cameras.cpp
+@@ -130,6 +130,11 @@ void MujocoCameras::register_cameras(const hardware_interface::HardwareInfo& har
+ 
+ void MujocoCameras::init()
+ {
++  if (cameras_.empty())
++  {
++    return;
++  }
++
+   // Start the rendering thread process
+   if (!glfwInit())
+   {
+diff --git a/mujoco_ros2_control/src/mujoco_lidar.cpp b/mujoco_ros2_control/src/mujoco_lidar.cpp
+index b553814..8e63dc5 100644
+--- a/mujoco_ros2_control/src/mujoco_lidar.cpp
++++ b/mujoco_ros2_control/src/mujoco_lidar.cpp
+@@ -211,6 +211,11 @@ bool MujocoLidar::register_lidar(const hardware_interface::HardwareInfo& hardwar
+ 
+ void MujocoLidar::init()
+ {
++  if (lidar_sensors_.empty())
++  {
++    return;
++  }
++
+   // Start the rendering thread process
+   publish_lidar_ = true;
+   rendering_thread_ = std::thread(&MujocoLidar::update_loop, this);
+diff --git a/mujoco_ros2_control/src/mujoco_system_interface.cpp b/mujoco_ros2_control/src/mujoco_system_interface.cpp
+index 7364f44..d5b8930 100644
+--- a/mujoco_ros2_control/src/mujoco_system_interface.cpp
++++ b/mujoco_ros2_control/src/mujoco_system_interface.cpp
+@@ -1819,8 +1819,10 @@ bool MujocoSystemInterface::register_mujoco_actuators()
+     {
+       actuator_data.position_interface.state_ = mj_data_->qpos[actuator_data.mj_pos_adr];
+       actuator_data.velocity_interface.state_ = mj_data_->qvel[actuator_data.mj_vel_adr];
+-      // We never set data for effort from an initial conditions file
+-      actuator_data.effort_interface.state_ = 0.0;
++      actuator_data.effort_interface.state_ =
++          actuator_data.is_effort_control_enabled && actuator_data.mj_actuator_id >= 0
++              ? mj_data_->ctrl[actuator_data.mj_actuator_id]
++              : 0.0;
+ 
+       if (actuator_data.actuator_type != ActuatorType::PASSIVE)
+       {
