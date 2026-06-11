@@ -31,10 +31,21 @@ index b553814..8e63dc5 100644
    publish_lidar_ = true;
    rendering_thread_ = std::thread(&MujocoLidar::update_loop, this);
 diff --git a/mujoco_ros2_control/src/mujoco_system_interface.cpp b/mujoco_ros2_control/src/mujoco_system_interface.cpp
-index 7364f44..d5b8930 100644
+index 7364f44..59c28d1 100644
 --- a/mujoco_ros2_control/src/mujoco_system_interface.cpp
 +++ b/mujoco_ros2_control/src/mujoco_system_interface.cpp
-@@ -1819,8 +1819,10 @@ bool MujocoSystemInterface::register_mujoco_actuators()
+@@ -822,7 +822,9 @@ MujocoSystemInterface::on_init(const hardware_interface::HardwareComponentInterf
+     });
+   }
+ 
+-  if (sim_ready_future.wait_for(2s) == std::future_status::timeout)
++  // First GL context creation can take >10 s on remote/virtual X displays;
++  // 2 s aborted GUI startup on otherwise healthy setups.
++  if (sim_ready_future.wait_for(30s) == std::future_status::timeout)
+   {
+     RCLCPP_FATAL(get_logger(), "Timed out waiting to start simulation rendering!");
+     return hardware_interface::CallbackReturn::ERROR;
+@@ -1819,8 +1821,10 @@ bool MujocoSystemInterface::register_mujoco_actuators()
      {
        actuator_data.position_interface.state_ = mj_data_->qpos[actuator_data.mj_pos_adr];
        actuator_data.velocity_interface.state_ = mj_data_->qvel[actuator_data.mj_vel_adr];
